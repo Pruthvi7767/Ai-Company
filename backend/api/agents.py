@@ -54,12 +54,23 @@ async def get_agent(agent_id: str):
 
 @router.get("/{agent_id}/memory")
 async def get_agent_memory(agent_id: str):
-    return {"memories": []}
+    from backend.services.memory.mem0_client import Mem0Client
+    memory = Mem0Client(namespace=agent_id)
+    memories = await memory.search("", limit=20)
+    return {"memories": memories, "agent_id": agent_id}
 
 @router.get("/{agent_id}/skills")
 async def get_agent_skills(agent_id: str):
-    return {"skills": []}
+    from backend.database.sqlite_fts import FTS5Client
+    db = SupabaseClient()
+    agent = await db.get_by_id("agents", agent_id)
+    dept = agent.get("department", agent_id) if agent else agent_id
+    fts = FTS5Client(namespace=dept)
+    skills = await fts.search("", limit=20)
+    return {"skills": skills, "agent_id": agent_id, "department": dept}
 
 @router.get("/{agent_id}/tasks")
 async def get_agent_tasks(agent_id: str):
-    return {"tasks": []}
+    db = SupabaseClient()
+    tasks = await db.select("audit_log", {"agent_id": agent_id}, limit=50)
+    return {"tasks": tasks, "total": len(tasks)}

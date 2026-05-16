@@ -52,10 +52,12 @@ app.include_router(websocket.router, tags=["websocket"])
 async def startup_event():
     import asyncio
     from backend.database.redis_client import RedisClient
+    from backend.startup import startup
     redis = RedisClient()
     import time
     await redis.set("markly_start_time", str(time.time()))
-    print(f"Markly v{settings.MARKLY_VERSION} startup event fired")
+    asyncio.create_task(startup())
+    print(f"Markly v{settings.MARKLY_VERSION} startup initiated")
 
 @app.get("/")
 async def root():

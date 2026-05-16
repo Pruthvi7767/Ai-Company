@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plug, CheckCircle, AlertTriangle, XCircle, MoreVertical, TrendingUp, Mail, Server, Lock, RefreshCw, Eye, EyeOff, Shield } from 'lucide-react';
+import { Search, Plug, CheckCircle, AlertTriangle, XCircle, MoreVertical, TrendingUp, Mail, Server, RefreshCw, Eye, EyeOff, Shield } from 'lucide-react';
 import { useApi, api } from '../hooks/useApi';
 
 const EMAIL_PROVIDERS = [

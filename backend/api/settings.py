@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional
-from backend.database import SupabaseClient
+from backend.database import SupabaseClient, RedisClient
 from backend.config import settings
 
 router = APIRouter()
@@ -30,9 +30,16 @@ async def get_settings():
 @router.patch("")
 async def update_settings(data: SettingsUpdate):
     db = SupabaseClient()
+    redis = RedisClient()
     if data.key:
         import json
         await db.update("settings", {"key": data.key}, {"value": json.dumps(data.value)})
+        if data.key == "MARKLY_PAUSED":
+            paused_value = "true" if data.value else "false"
+            await redis.set("MARKLY_PAUSED", paused_value)
+            from backend.services.telegram.bot import TelegramBot
+            msg = "⏸ Markly paused from dashboard." if data.value else "▶️ Markly resumed from dashboard."
+            await TelegramBot.send_message(msg)
     return {"updated": True}
 
 @router.get("/telegram")
@@ -45,7 +52,14 @@ async def update_telegram(data: TelegramUpdate):
 
 @router.post("/test-telegram")
 async def test_telegram():
-    return {"sent": True, "message": "Test message from Markly"}
+    from backend.services.telegram.bot import TelegramBot
+    try:
+        await TelegramBot.send_message(
+            "🧪 Test message from Markly Dashboard\n\nIf you see this, Telegram integration is working correctly. ✅"
+        )
+        return {"sent": True, "message": "Test message sent to Telegram successfully"}
+    except Exception as e:
+        return {"sent": False, "error": str(e)}
 
 @router.get("/llm")
 async def get_llm():

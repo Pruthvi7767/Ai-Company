@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Grid3X3, List } from 'lucide-react';
-import { departmentColors } from '../data/mockData';
+import { departmentColors } from '../lib/constants';
 import { useApi } from '../hooks/useApi';
 
 export default function AgentDirectory() {

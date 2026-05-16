@@ -14,7 +14,7 @@ export default function Analytics() {
   const agents = agentsData || [];
   const agentPerfData = (analyticsAgents || agents.slice(0, 8)).map(a => ({ name: (a.name || '').split(' ')[0], tasks: a.tasks_today || a.tasks || 0, roi: a.roi || 0 }));
   
-  const chartData = (revenueData?.trend || []).map(t => ({
+  const chartData = (revenueData?.trend || []).map((t: any) => ({
     month: t.date?.slice(5) || '',
     revenue: t.amount || 0
   }));

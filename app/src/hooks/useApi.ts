@@ -39,7 +39,10 @@ export const api = {
     });
     return res.json();
   },
-  ws: (path: string) => new WebSocket(`${API_BASE.replace('http', 'ws')}${path}`),
+  ws: (path: string) => {
+    const wsBase = API_BASE.replace(/^https?/, (match: string) => match === 'https' ? 'wss' : 'ws');
+    return new WebSocket(`${wsBase}${path}`);
+  },
 };
 
 export function useApi<T>(path: string, deps: any[] = []) {

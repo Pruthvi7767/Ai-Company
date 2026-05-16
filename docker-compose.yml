@@ -8,26 +8,29 @@ services:
     volumes:
       - ./backend/agents/souls:/app/souls:ro
       - ./data:/app/data
+      - firefox_sessions:/app/browser_sessions
     depends_on: [redis]
     restart: unless-stopped
     mem_limit: 1200m
 
   celery:
     build: .
-    command: celery -A tasks.celery_app worker --concurrency=2 -Q default,scraping,finance
+    command: celery -A backend.tasks.celery_app worker --concurrency=2 -Q default,scraping,finance
     env_file: .env
     volumes:
       - ./backend/agents/souls:/app/souls:ro
       - ./data:/app/data
-    depends_on: [redis]
+    depends_on: [redis, backend]
     restart: unless-stopped
     mem_limit: 300m
 
   celery-beat:
     build: .
-    command: celery -A tasks.celery_app beat --scheduler celery.schedulers.PersistentScheduler
+    command: celery -A backend.tasks.celery_app beat --scheduler celery.schedulers.PersistentScheduler
     env_file: .env
-    depends_on: [redis]
+    volumes:
+      - ./data:/app/data
+    depends_on: [redis, backend]
     restart: unless-stopped
     mem_limit: 100m
 

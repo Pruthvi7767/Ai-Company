@@ -114,7 +114,7 @@ export default function Settings() {
           {Object.entries(notifSettings).map(([key, value]) => (
             <div key={key} className="flex items-center justify-between py-2">
               <span className="text-sm text-[#adadad] capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-              <button onClick={() => setNotifSettings(prev => ({ ...prev, [key]: !value }))}
+              <button onClick={() => setNotifSettings((prev: any) => ({ ...prev, [key]: !value }))}
                 className={`w-10 h-5 rounded-full transition-all ${value ? 'bg-[#e8a94e]' : 'bg-white/[0.1]'}`}>
                 <div className={`w-4 h-4 rounded-full bg-white transition-transform ${value ? 'translate-x-5' : 'translate-x-0.5'}`} /></button>
             </div>))}
@@ -140,10 +140,10 @@ export default function Settings() {
             <div key={model.key}>
               <div className="flex justify-between text-xs mb-1.5"><span className="text-[#adadad]">{model.label}</span><span className="text-white">${budgetLimits[model.key as keyof typeof budgetLimits]}</span></div>
               <input type="range" min={0} max={100} value={budgetLimits[model.key as keyof typeof budgetLimits]}
-                onChange={(e) => setBudgetLimits(prev => ({ ...prev, [model.key]: parseInt(e.target.value) }))} className="w-full accent-[#e8a94e]" />
+                onChange={(e) => setBudgetLimits((prev: any) => ({ ...prev, [model.key]: parseInt(e.target.value) }))} className="w-full accent-[#e8a94e]" />
             </div>))}
           <div className="pt-4 border-t border-white/[0.06]">
-            <div className="flex justify-between text-sm mb-2"><span className="text-[#adadad]">Total Daily Cap</span><span className="text-white font-medium">${Object.values(budgetLimits).slice(0, 5).reduce((a, b) => a + b, 0)}</span></div>
+            <div className="flex justify-between text-sm mb-2"><span className="text-[#adadad]">Total Daily Cap</span><span className="text-white font-medium">${Object.values(budgetLimits as Record<string, number>).slice(0, 5).reduce((a, b) => a + b, 0)}</span></div>
           </div>
           <button onClick={handleSaveBudget} className="px-6 py-2.5 rounded-lg bg-[#e8a94e] text-black text-sm font-semibold">Save Budget</button>
         </div>

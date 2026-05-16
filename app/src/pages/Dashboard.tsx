@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, CheckCircle, AlertCircle, ArrowRight, Activity, DollarSign } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { departmentColors } from '../data/mockData';
+import { departmentColors } from '../lib/constants';
 import { useApi, api } from '../hooks/useApi';
 
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

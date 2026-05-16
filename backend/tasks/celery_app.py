@@ -6,6 +6,17 @@ celery_app = Celery(
     "markly",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
+    include=[
+        "backend.tasks.scheduled.heartbeat_cron",
+        "backend.tasks.scheduled.mcp_health_check",
+        "backend.tasks.scheduled.business_discovery",
+        "backend.tasks.scheduled.daily_report",
+        "backend.tasks.scheduled.weekly_report",
+        "backend.tasks.scheduled.account_detection",
+        "backend.tasks.scheduled.budget_reset",
+        "backend.tasks.scheduled.fts5_optimize",
+        "backend.tasks.scheduled.csuite_watchdog",
+    ],
 )
 
 celery_app.conf.update(

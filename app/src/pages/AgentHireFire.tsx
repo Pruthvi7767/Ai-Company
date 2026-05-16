@@ -39,7 +39,7 @@ export default function AgentHireFire() {
 
   const handleTerminate = async (id: string) => {
     try {
-      await api.post(`/api/hire-fire/terminate/${id}`, {});
+      await api.delete(`/api/hire-fire/terminate/${id}`);
       fetchData();
     } catch {}
   };

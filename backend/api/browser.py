@@ -12,6 +12,10 @@ class MCPTestRequest(BaseModel):
 @router.get("/mcp/status")
 async def mcp_status():
     redis = RedisClient()
+    from backend.services.mcp.mcp_client import MCPBrowser
+    mcp = MCPBrowser()
+    connected = await mcp.connect()
+
     tabs = []
     for i in range(5):
         tab_data = await redis.get(f"mcp:tab:{i}")
@@ -19,7 +23,8 @@ async def mcp_status():
             tabs.append(json.loads(tab_data))
         else:
             tabs.append({"tab_id": i, "url": None, "agent": None, "status": "idle"})
-    return {"tabs": tabs, "connected": True}
+
+    return {"tabs": tabs, "connected": connected}
 
 @router.post("/mcp/test")
 async def mcp_test(req: MCPTestRequest):
@@ -34,7 +39,22 @@ async def mcp_test(req: MCPTestRequest):
 
 @router.get("/sessions")
 async def list_sessions():
-    return {"sessions": []}
+    db = SupabaseClient()
+    redis = RedisClient()
+    connectors = await db.select("connectors", {"status": "connected"})
+    sessions = []
+    for c in connectors:
+        last_hb = await redis.get(f"heartbeat:{c['id']}")
+        status = "unknown"
+        if last_hb:
+            status = "alive"
+        sessions.append({
+            "id": c["id"],
+            "platform_name": c.get("name", c["id"]),
+            "status": status,
+            "last_heartbeat": last_hb or "Never",
+        })
+    return {"sessions": sessions}
 
 @router.post("/sessions/{session_id}/heartbeat")
 async def force_session_heartbeat(session_id: str):

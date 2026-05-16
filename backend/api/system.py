@@ -9,9 +9,9 @@ _start_time = time.time()
 
 @router.get("/health")
 async def system_health():
-    process = psutil.Process()
-    ram_used = process.memory_info().rss / (1024 * 1024)
-    ram_total = psutil.virtual_memory().total / (1024 * 1024)
+    ram = psutil.virtual_memory()
+    ram_used = ram.used / (1024 * 1024)
+    ram_total = ram.total / (1024 * 1024)
 
     redis = RedisClient()
     redis_ok = await redis.ping()
@@ -20,12 +20,26 @@ async def system_health():
     dept_keys = await redis.keys("agent:alive:dept:*")
     agents_alive = len(csuite_keys) + len(dept_keys)
 
+    try:
+        db = SupabaseClient()
+        await db.select("agents", limit=1)
+        supabase_ok = True
+    except Exception:
+        supabase_ok = False
+
+    try:
+        from backend.services.mcp.mcp_client import MCPBrowser
+        mcp = MCPBrowser()
+        mcp_ok = await mcp.connect()
+    except Exception:
+        mcp_ok = False
+
     ram_alert_fired = False
-    if ram_used > 1638:
+    if ram.percent > 80:
         try:
             from backend.services.telegram.bot import TelegramBot
             await TelegramBot.send_alert(
-                f"\u26A0\uFE0F High RAM usage: {ram_used:.0f}MB / {ram_total:.0f}MB ({ram_used/ram_total*100:.1f}%)"
+                f"⚠️ High RAM: {ram_used:.0f}MB / {ram_total:.0f}MB ({ram.percent:.1f}%)"
             )
             ram_alert_fired = True
         except Exception:
@@ -37,11 +51,11 @@ async def system_health():
         "uptime": time.time() - _start_time,
         "ram_used_mb": round(ram_used, 1),
         "ram_total_mb": round(ram_total, 1),
-        "ram_pct": round(psutil.virtual_memory().percent, 1),
-        "cpu_pct": psutil.cpu_percent(),
+        "ram_pct": round(ram.percent, 1),
+        "cpu_pct": psutil.cpu_percent(interval=0.1),
         "redis_ok": redis_ok,
-        "supabase_ok": True,
-        "mcp_ok": True,
+        "supabase_ok": supabase_ok,
+        "mcp_ok": mcp_ok,
         "nvidia_ok": len(settings.NVIDIA_API_KEYS) > 0,
         "agents_alive": agents_alive,
         "celery_ok": True,
