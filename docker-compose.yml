@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports: ["8000:8000"]
+    env_file: .env
+    volumes:
+      - ./backend/agents/souls:/app/souls:ro
+      - ./data:/app/data
+    depends_on: [redis]
+    restart: unless-stopped
+    mem_limit: 1200m
+
+  celery:
+    build: .
+    command: celery -A tasks.celery_app worker --concurrency=2 -Q default,scraping,finance
+    env_file: .env
+    volumes:
+      - ./backend/agents/souls:/app/souls:ro
+      - ./data:/app/data
+    depends_on: [redis]
+    restart: unless-stopped
+    mem_limit: 300m
+
+  celery-beat:
+    build: .
+    command: celery -A tasks.celery_app beat --scheduler celery.schedulers.PersistentScheduler
+    env_file: .env
+    depends_on: [redis]
+    restart: unless-stopped
+    mem_limit: 100m
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports: ["6379:6379"]
+    restart: unless-stopped
+    mem_limit: 150m
+
+  nginx:
+    image: nginx:alpine
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./app/dist:/var/www/html:ro
+    depends_on: [backend]
+    restart: unless-stopped
+    mem_limit: 30m

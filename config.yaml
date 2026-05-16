@@ -1,0 +1,82 @@
+system:
+  name: Markly
+  version: "2.0.0"
+  timezone: Asia/Kolkata
+  currency: INR
+  inr_per_usd: 83.5
+
+agents:
+  csuite_count: 7
+  max_concurrent_departments: 3
+  confidence_threshold: 0.70
+  token_budgets:
+    csuite: 50000
+    manager: 10000
+    worker: 5000
+
+llm:
+  nvidia:
+    base_url: https://integrate.api.nvidia.com/v1
+    models:
+      csuite: nvidia/nemotron-4-340b-instruct
+      manager: meta/llama-3.1-70b-instruct
+      worker: meta/llama-3.1-8b-instruct
+      research: mistralai/mixtral-8x7b-instruct-v0.1
+      longcontext: microsoft/phi-3-medium-128k-instruct
+  groq:
+    base_url: https://api.groq.com/openai/v1
+    models:
+      csuite: llama-3.1-70b-versatile
+      manager: llama-3.1-70b-versatile
+      worker: llama-3.1-8b-instant
+      research: mixtral-8x7b-32768
+
+scraping:
+  layers:
+    - mcp_browser
+    - crawl4ai
+    - playwright_firefox
+  mcp:
+    url: https://good90-bronew.hf.space/mcp
+    max_tabs: 5
+  playwright:
+    browser: firefox
+    headless: true
+
+business:
+  max_per_month: 2
+  score_threshold: 0.90
+  weights:
+    market_demand: 0.20
+    competition_level: 0.15
+    profit_potential: 0.20
+    setup_complexity: 0.10
+    time_to_revenue: 0.15
+    scalability: 0.10
+    risk_level: 0.10
+  types:
+    - amazon_kdp
+    - micro_saas
+    - affiliate_marketing
+    - digital_products
+    - stock_assets
+    - drop_servicing
+    - domain_flipping
+    - newsletter
+
+cron:
+  heartbeat: "*/10 * * * *"
+  mcp_health: "*/5 * * * *"
+  business_scan: "0 0 * * *"
+  account_detection: "0 */12 * * *"
+  daily_briefing: "0 2 * * *"
+  weekly_report: "0 2 * * 0"
+  fts5_optimize: "0 3 * * *"
+  budget_reset: "1 0 * * *"
+
+ram_limits:
+  backend: 1200m
+  celery: 300m
+  celery_beat: 100m
+  redis: 150m
+  nginx: 30m
